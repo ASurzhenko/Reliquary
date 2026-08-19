@@ -1,0 +1,26 @@
+# Normalize line endings in the repository; check out native.
+* text=auto
+
+# Unity serializes scenes, prefabs and assets as YAML (Force Text) — keep them diffable as text.
+*.unity      text
+*.prefab     text
+*.asset      text
+*.mat        text
+*.anim       text
+*.controller text
+*.meta       text
+*.asmdef     text
+*.json       text
+*.cs         text diff=csharp
+
+# Binary assets: never line-ending-converted, never merged.
+*.png  binary
+*.jpg  binary
+*.psd  binary
+*.ttf  binary
+*.otf  binary
+*.wav  binary
+*.mp3  binary
+*.ogg  binary
+
+# No Git LFS on purpose: cloning this repository must not require git-lfs to be installed.
