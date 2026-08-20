@@ -51,6 +51,38 @@ namespace Reliquary.Tests.EditMode
         }
 
         [Test]
+        public void EntriesEmptyButEssencePositive_IsRestored()
+        {
+            // Rule 4 refuses a save that carries NO state. A balance with no relics is state, and refusing it
+            // would spend the player's essence for them.
+            InventorySnapshot snapshot = Snapshot(SaveFormat.Current, Array.Empty<InventorySnapshotEntry>());
+            snapshot.Essence = 100;
+
+            SavedInventory saved = SavedInventoryReader.Read(snapshot, Catalog());
+
+            Assert.That(saved.Status, Is.EqualTo(SavedInventoryStatus.Restored));
+            Assert.That(saved.Inventory.DistinctCount, Is.EqualTo(0));
+            Assert.That(saved.Essence, Is.EqualTo(100));
+            Assert.That(saved.Issues, Is.Empty);
+        }
+
+        [Test]
+        public void NegativeEssence_IsClampedWithAWarning()
+        {
+            InventorySnapshot snapshot = Snapshot(SaveFormat.Current, Entry("relic.sunken_crown", 2));
+            snapshot.Essence = -40;
+
+            SavedInventory saved = SavedInventoryReader.Read(snapshot, Catalog());
+
+            // The non-destructive branch: keep the relics, lose only the impossible number.
+            Assert.That(saved.Status, Is.EqualTo(SavedInventoryStatus.Restored));
+            Assert.That(saved.Essence, Is.EqualTo(0));
+            Assert.That(saved.Inventory.CountOf(new RelicId("relic.sunken_crown")), Is.EqualTo(2));
+            AssertOneWarning(saved);
+            Assert.That(saved.Issues[0].Message, Does.Contain("-40"));
+        }
+
+        [Test]
         public void NullEntry_IsSkippedWithAWarning()
         {
             SavedInventory saved = SavedInventoryReader.Read(
@@ -136,6 +168,7 @@ namespace Reliquary.Tests.EditMode
         {
             Assert.That(saved.Status, Is.EqualTo(SavedInventoryStatus.Refused));
             Assert.That(saved.Inventory.DistinctCount, Is.EqualTo(0));
+            Assert.That(saved.Essence, Is.EqualTo(0), "a refused save contributes nothing to the balance");
             Assert.That(saved.Carried, Is.Empty);
             Assert.That(saved.Issues.Count, Is.EqualTo(1));
             Assert.That(saved.Issues[0].Severity, Is.EqualTo(RelicContentSeverity.Error));

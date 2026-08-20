@@ -46,7 +46,7 @@ namespace Reliquary.Tests.EditMode
             SavedInventory saved = SavedInventoryReader.Read(snapshot, Catalog());
 
             Assert.That(saved.Status, Is.EqualTo(SavedInventoryStatus.Refused));
-            Assert.That(saved.Issues[0].Message, Does.Contain("no entries"));
+            Assert.That(saved.Issues[0].Message, Does.Contain("no state"));
         }
 
         [Test]
@@ -57,7 +57,7 @@ namespace Reliquary.Tests.EditMode
             SavedInventory saved = SavedInventoryReader.Read(snapshot, Catalog());
 
             Assert.That(saved.Status, Is.EqualTo(SavedInventoryStatus.Refused));
-            Assert.That(saved.Issues[0].Message, Does.Contain("no entries"));
+            Assert.That(saved.Issues[0].Message, Does.Contain("no state"));
         }
 
         [Test]
@@ -84,14 +84,49 @@ namespace Reliquary.Tests.EditMode
         [Test]
         public void UnknownField_IsIgnored()
         {
+            // The field name has to be one the shape does NOT declare, or this stops testing anything while
+            // still passing: it read "Essence" until the save shape grew an Essence field.
             InventorySnapshot snapshot = JsonUtility.FromJson<InventorySnapshot>(
-                "{\"Version\":1,\"Essence\":40,\"Entries\":[{\"RelicId\":\"relic.sunken_crown\",\"Count\":2}]}");
+                "{\"Version\":1,\"Wallet\":40,\"Entries\":[{\"RelicId\":\"relic.sunken_crown\",\"Count\":2}]}");
 
             // Adding a field to the save shape therefore needs no version bump: an older payload decodes
             // with the new field defaulted, and a newer one decodes with the unknown field dropped.
             Assert.That(snapshot.Version, Is.EqualTo(1));
             Assert.That(snapshot.Entries.Length, Is.EqualTo(1));
             Assert.That(snapshot.Entries[0].Count, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void P3EraPayload_DecodesWithZeroEssence()
+        {
+            // The captured payload was written before the save shape carried a balance, so it is the real
+            // evidence that an older save decodes with the new field defaulted rather than refused.
+            InventorySnapshot snapshot = JsonUtility.FromJson<InventorySnapshot>(CapturedSave);
+
+            SavedInventory saved = SavedInventoryReader.Read(snapshot, FullCatalog());
+
+            Assert.That(snapshot.Essence, Is.EqualTo(0));
+            Assert.That(saved.Status, Is.EqualTo(SavedInventoryStatus.Restored));
+            Assert.That(saved.Essence, Is.EqualTo(0));
+            Assert.That(saved.Inventory.DistinctCount, Is.EqualTo(3), "no relic is lost to the added field");
+            Assert.That(saved.Issues, Is.Empty, "an older save is not a complaint");
+        }
+
+        [Test]
+        public void NullEntriesWithEssence_RestoresTheBalance()
+        {
+            // JsonUtility leaves an absent array member null, so this payload reaches the reader with
+            // Entries == null and a balance worth keeping. Before the normalisation it threw at the loop.
+            InventorySnapshot snapshot = JsonUtility.FromJson<InventorySnapshot>("{\"Version\":1,\"Essence\":100}");
+
+            Assert.That(snapshot.Entries, Is.Null);
+
+            SavedInventory saved = SavedInventoryReader.Read(snapshot, Catalog());
+
+            Assert.That(saved.Status, Is.EqualTo(SavedInventoryStatus.Restored));
+            Assert.That(saved.Inventory.DistinctCount, Is.EqualTo(0));
+            Assert.That(saved.Essence, Is.EqualTo(100));
+            Assert.That(saved.Issues, Is.Empty);
         }
 
         private static RelicCatalog Catalog()

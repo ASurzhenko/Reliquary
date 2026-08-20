@@ -86,9 +86,53 @@ namespace Reliquary.Domain
             bool firstCopy = !_counts.TryGetValue(id, out int count);
             _counts[id] = count + 1;
 
-            InventoryChange change = new InventoryChange(id, count + 1, firstCopy);
+            InventoryChange change = new InventoryChange(id, count + 1, firstCopy, 1);
             Changed?.Invoke(change);
             return change;
+        }
+
+        /// <summary>
+        /// Moves a count and raises nothing, so the caller can write the whole resulting state before any of
+        /// it is announced. The guards are the last line, for a caller that skipped the validation the
+        /// exchange performs before the write — the arrangement the restore constructor above already uses.
+        /// </summary>
+        internal InventoryChange ApplySilently(RelicId id, int copyDelta)
+        {
+            if (!id.IsValid)
+            {
+                throw new ArgumentException("A relic without an id cannot be owned.", nameof(id));
+            }
+
+            if (copyDelta == 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(copyDelta), copyDelta,
+                    "A change that moves no copy must not reach the inventory at all.");
+            }
+
+            _counts.TryGetValue(id, out int count);
+            int next = count + copyDelta;
+
+            if (next < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(copyDelta), copyDelta,
+                    $"'{id}' is owned {count} time(s); a delta of {copyDelta} would take that below zero.");
+            }
+
+            if (next == 0)
+            {
+                _counts.Remove(id);
+            }
+            else
+            {
+                _counts[id] = next;
+            }
+
+            return new InventoryChange(id, next, count == 0 && copyDelta > 0, copyDelta);
+        }
+
+        internal void Announce(InventoryChange change)
+        {
+            Changed?.Invoke(change);
         }
     }
 }

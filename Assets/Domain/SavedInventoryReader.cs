@@ -15,11 +15,12 @@ namespace Reliquary.Domain
     /// <summary>What a decoded snapshot turned out to be worth.</summary>
     public sealed class SavedInventory
     {
-        public SavedInventory(SavedInventoryStatus status, Inventory inventory,
+        public SavedInventory(SavedInventoryStatus status, Inventory inventory, int essence,
             IReadOnlyList<InventorySnapshotEntry> carried, IReadOnlyList<RelicContentIssue> issues)
         {
             Status = status;
             Inventory = inventory;
+            Essence = essence;
             Carried = carried;
             Issues = issues;
         }
@@ -27,6 +28,9 @@ namespace Reliquary.Domain
         public SavedInventoryStatus Status { get; }
 
         public Inventory Inventory { get; }
+
+        /// <summary>The balance the save carried, clamped to 0. Always 0 on a refused save.</summary>
+        public int Essence { get; }
 
         /// <summary>Entries naming relics this build's catalogue does not contain. Kept, and written back.</summary>
         public IReadOnlyList<InventorySnapshotEntry> Carried { get; }
@@ -67,22 +71,38 @@ namespace Reliquary.Domain
                 return Refused(issues);
             }
 
-            // A save with no entries did not come from this build: saving happens on change, and a change
-            // means at least one entry. InventoryPersistence refuses to write one, which is what keeps this
-            // premise true rather than merely assumed.
-            if (snapshot.Entries == null || snapshot.Entries.Length == 0)
+            // A save that carries no state at all did not come from this build: saving happens on change, and
+            // a change leaves either an entry or a balance behind. StatePersistence refuses to write one,
+            // which is what keeps this premise true rather than merely assumed.
+            if ((snapshot.Entries == null || snapshot.Entries.Length == 0) && snapshot.Essence <= 0)
             {
                 issues.Add(RelicContentIssue.Error(default,
-                    "The save holds no entries; this build never writes one, so it did not come from here."));
+                    "The save carries no state; this build never writes one, so it did not come from here."));
                 return Refused(issues);
+            }
+
+            // Entries is null when the field was absent from the payload — a shape JsonUtility produces and
+            // the save tools write. The rule above no longer refuses every such payload (essence alone is
+            // state worth restoring), so the null has to stop here rather than at the loop below.
+            InventorySnapshotEntry[] entries = snapshot.Entries ?? Array.Empty<InventorySnapshotEntry>();
+
+            int essence = snapshot.Essence;
+
+            if (essence < 0)
+            {
+                // A balance cannot be negative, and refusing the whole save over one field would discard
+                // relics the player owns. The non-destructive branch keeps the ownership data.
+                issues.Add(RelicContentIssue.Warning(default,
+                    $"The save carries a balance of {essence}; a balance cannot be negative. It was read as 0."));
+                essence = 0;
             }
 
             Dictionary<string, int> counts = new Dictionary<string, int>(StringComparer.Ordinal);
             List<string> order = new List<string>();
 
-            for (int index = 0; index < snapshot.Entries.Length; index++)
+            for (int index = 0; index < entries.Length; index++)
             {
-                InventorySnapshotEntry entry = snapshot.Entries[index];
+                InventorySnapshotEntry entry = entries[index];
 
                 if (entry == null)
                 {
@@ -140,12 +160,14 @@ namespace Reliquary.Domain
                     $"'{id}' is not in this build's catalogue; it stays in the save and is not shown."));
             }
 
-            return new SavedInventory(SavedInventoryStatus.Restored, new Inventory(owned), carried, issues);
+            return new SavedInventory(SavedInventoryStatus.Restored, new Inventory(owned), essence, carried, issues);
         }
 
         private static SavedInventory Refused(IReadOnlyList<RelicContentIssue> issues)
         {
-            return new SavedInventory(SavedInventoryStatus.Refused, new Inventory(),
+            // Essence is stated rather than left to the caller: the composition root reads it out of this
+            // object on the loaded path, and a refused save must contribute nothing to the balance.
+            return new SavedInventory(SavedInventoryStatus.Refused, new Inventory(), 0,
                 Array.Empty<InventorySnapshotEntry>(), issues);
         }
     }

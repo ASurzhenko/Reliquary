@@ -14,7 +14,7 @@ namespace Reliquary.Tests.EditMode
             inventory.Add(new RelicId("relic.sunken_crown"));
             inventory.Add(new RelicId("relic.pyre_key"));
 
-            InventorySnapshot snapshot = InventorySnapshotFactory.Create(inventory,
+            InventorySnapshot snapshot = InventorySnapshotFactory.Create(inventory, new EssenceWallet(0),
                 Array.Empty<InventorySnapshotEntry>());
             SavedInventory read = SavedInventoryReader.Read(snapshot, Catalog());
 
@@ -34,7 +34,7 @@ namespace Reliquary.Tests.EditMode
                 new InventorySnapshotEntry { RelicId = "relic.not_in_this_build", Count = 3 }
             };
 
-            InventorySnapshot snapshot = InventorySnapshotFactory.Create(inventory, carried);
+            InventorySnapshot snapshot = InventorySnapshotFactory.Create(inventory, new EssenceWallet(0), carried);
 
             Assert.That(snapshot.Entries.Length, Is.EqualTo(2), "the carried entry is written back, not merely reported");
             Assert.That(snapshot.Entries[1].RelicId, Is.EqualTo("relic.not_in_this_build"));
@@ -47,7 +47,7 @@ namespace Reliquary.Tests.EditMode
             Inventory inventory = new Inventory();
             inventory.Add(new RelicId("relic.sunken_crown"));
 
-            InventorySnapshot snapshot = InventorySnapshotFactory.Create(inventory,
+            InventorySnapshot snapshot = InventorySnapshotFactory.Create(inventory, new EssenceWallet(0),
                 Array.Empty<InventorySnapshotEntry>());
 
             Assert.That(snapshot.Version, Is.EqualTo(SaveFormat.Current));

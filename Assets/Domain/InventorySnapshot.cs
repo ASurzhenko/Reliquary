@@ -23,6 +23,12 @@ namespace Reliquary.Domain
     {
         public int Version;
         public InventorySnapshotEntry[] Entries;
+
+        /// <summary>
+        /// Spendable essence. Added rather than versioned: a payload written before this field existed
+        /// decodes with it at 0, which is exactly what an older save should restore.
+        /// </summary>
+        public int Essence;
     }
 
     [Serializable]
