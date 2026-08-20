@@ -11,7 +11,7 @@ namespace Reliquary.Presentation
     public sealed class UiContext
     {
         public UiContext(RelicCatalog catalog, RelicPresentationLibrary presentation, Inventory inventory,
-            AcquisitionCoordinator coordinator, InventoryPersistence persistence)
+            AcquisitionCoordinator coordinator, StatePersistence persistence)
         {
             Catalog = catalog;
             Presentation = presentation;
@@ -28,6 +28,6 @@ namespace Reliquary.Presentation
 
         public AcquisitionCoordinator Coordinator { get; }
 
-        public InventoryPersistence Persistence { get; }
+        public StatePersistence Persistence { get; }
     }
 }

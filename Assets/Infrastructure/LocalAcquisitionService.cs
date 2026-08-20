@@ -13,6 +13,7 @@ namespace Reliquary.Infrastructure
     public sealed class LocalAcquisitionService : IAcquisitionService
     {
         private readonly RelicCatalog _catalog;
+        private readonly SetCatalog _sets;
         private readonly Inventory _inventory;
         private readonly Random _random;
         private readonly int _excavationMilliseconds;
@@ -23,10 +24,11 @@ namespace Reliquary.Infrastructure
         /// already committed when the client gave up, which is the case the coordinator's generation counter
         /// exists for.
         /// </param>
-        public LocalAcquisitionService(RelicCatalog catalog, Inventory inventory, Random random,
+        public LocalAcquisitionService(RelicCatalog catalog, SetCatalog sets, Inventory inventory, Random random,
             int excavationMilliseconds, Func<bool> completeDespiteCancellation = null)
         {
             _catalog = catalog;
+            _sets = sets;
             _inventory = inventory;
             _random = random;
             _excavationMilliseconds = excavationMilliseconds < 0 ? 0 : excavationMilliseconds;
@@ -49,7 +51,9 @@ namespace Reliquary.Infrastructure
                 }
             }
 
-            RelicModifiers modifiers = InventoryModifiers.From(_catalog, _inventory);
+            // Everything contributing right now — owned relics AND the perks of completed sets. This one line
+            // is where a set's perk reaches the next draw.
+            RelicModifiers modifiers = ActiveModifiers.For(_catalog, _sets, _inventory);
             DrawTable table = DrawTable.Build(_catalog, _inventory, modifiers);
 
             if (table.TotalWeight <= 0)

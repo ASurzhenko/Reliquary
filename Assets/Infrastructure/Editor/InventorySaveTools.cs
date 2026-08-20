@@ -73,6 +73,20 @@ namespace Reliquary.Infrastructure.EditorTools
                 "{\"RelicId\":\"relic.not_in_this_build\",\"Count\":3}]}");
         }
 
+        [MenuItem("Tools/Reliquary/Save/Break — essence with no entries array")]
+        private static void BreakWithEssenceAndNoEntriesArray()
+        {
+            // The reader accepts this now — essence alone is state worth restoring — so the null entries
+            // array has to be normalised rather than dereferenced. This is the only way to drive that.
+            Write("{\"Version\":1,\"Essence\":100}");
+        }
+
+        [MenuItem("Tools/Reliquary/Save/Break — P3-era payload (no Essence field)")]
+        private static void BreakWithPayloadThatPredatesEssence()
+        {
+            Write("{\"Version\":1,\"Entries\":[{\"RelicId\":\"relic.sunken_crown\",\"Count\":2}]}");
+        }
+
         [MenuItem("Tools/Reliquary/Save/Break — malformed entries")]
         private static void BreakWithMalformedEntries()
         {
