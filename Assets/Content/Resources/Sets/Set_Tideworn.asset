@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1958b63f09cae5f43881748c72eac9ac, type: 3}
+  m_Name: Set_Tideworn
+  m_EditorClassIdentifier: 
+  _id: set.tideworn
+  _displayName: Tideworn
+  _description: Four things the sea kept and then gave back. Hold them all and you
+    start to know where the next one washed up.
+  _members:
+  - {fileID: 11400000, guid: eeb592e1f020f464c88cffa03943ef4b, type: 2}
+  - {fileID: 11400000, guid: ff2c6ea348eb959458718ab17dcc0c1c, type: 2}
+  - {fileID: 11400000, guid: eabf7a8d2c1f1fa4bb6918aa599ffa99, type: 2}
+  - {fileID: 11400000, guid: 7a7bcaeb6805ae243a217409c1fe1b6f, type: 2}
+  _perks:
+  - {fileID: 11400000, guid: fa57daa38fe25a446baf591c36e55fe2, type: 2}

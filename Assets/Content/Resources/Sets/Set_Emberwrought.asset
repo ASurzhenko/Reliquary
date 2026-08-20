@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1958b63f09cae5f43881748c72eac9ac, type: 3}
+  m_Name: Set_Emberwrought
+  m_EditorClassIdentifier: 
+  _id: set.emberwrought
+  _displayName: Emberwrought
+  _description: Four things the fire could not finish. What survives a furnace gives
+    up more when it is finally broken down.
+  _members:
+  - {fileID: 11400000, guid: 33f9b65e75311a24292303d608179254, type: 2}
+  - {fileID: 11400000, guid: 79988cd4648785a4e99f47f8c752850f, type: 2}
+  - {fileID: 11400000, guid: 50a9965c1e9b1cd48bd45642b1442436, type: 2}
+  - {fileID: 11400000, guid: ae23cb2cb7a3884479184b91d2c1f929, type: 2}
+  _perks:
+  - {fileID: 11400000, guid: 8706c763fc837e143bd4b2050a500ba8, type: 2}
