@@ -16,8 +16,7 @@ namespace Reliquary.App
     public sealed class GameBootstrap : MonoBehaviour
     {
         [SerializeField] private int _excavationMilliseconds = 900;
-        [SerializeField] private AcquisitionButtonView _acquireView;
-        [SerializeField] private InventorySummaryView _summaryView;
+        [SerializeField] private UiShell _shell;
 
 #if UNITY_EDITOR
         [Header("Diagnostics (Editor only) — each one drives a failure branch by hand; see the README")]
@@ -83,8 +82,7 @@ namespace Reliquary.App
             _coordinator = new AcquisitionCoordinator(service, inventory, content.Catalog);
             _coordinator.Completed += OnAcquisitionCompleted;
 
-            _acquireView.Bind(_coordinator);
-            _summaryView.Bind(inventory, content.Catalog, content.Presentation);
+            _shell.Bind(new UiContext(content.Catalog, content.Presentation, inventory, _coordinator, _persistence));
 
 #if UNITY_EDITOR
             Debug.Log($"{nameof(GameBootstrap)}.{nameof(Awake)} [Thread] managed thread {System.Threading.Thread.CurrentThread.ManagedThreadId}.");
