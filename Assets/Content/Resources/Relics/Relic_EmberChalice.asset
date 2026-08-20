@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0717610eb0452dc4c9645e430a387905, type: 3}
+  m_Name: Relic_EmberChalice
+  m_EditorClassIdentifier: 
+  _id: relic.ember_chalice
+  _displayName: Ember Chalice
+  _description: Holds its heat for a week with no fire under it. Wine poured in comes
+    back out as smoke.
+  _icon: {fileID: 21300000, guid: 1ce30910b5c665d48a28a229b2fe09dc, type: 3}
+  _essenceValue: 21
+  _discoveryWeight: 30
+  _effects:
+  - {fileID: 11400000, guid: 6c0d67215487d624ba9519fd839b989e, type: 2}
