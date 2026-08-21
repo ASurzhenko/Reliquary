@@ -19,6 +19,7 @@ namespace Reliquary.Presentation
         [SerializeField] private TextMeshProUGUI _descriptionLabel;
         [SerializeField] private TextMeshProUGUI _attributesLabel;
         [SerializeField] private TextMeshProUGUI _effectsLabel;
+        [SerializeField] private TextMeshProUGUI _setsLabel;
         [SerializeField] private Button _closeButton;
         [SerializeField] private Button _dimmerButton;
 
@@ -60,8 +61,10 @@ namespace Reliquary.Presentation
             _dimmerButton.onClick.AddListener(Close);
         }
 
-        private void OnDisable()
+        protected override void OnDisable()
         {
+            base.OnDisable();
+
             // Another overlay may take the root away — a reveal card raised by an acquisition, say. The sheet
             // is then not open any more, whoever closed it.
             _isOpen = false;
@@ -84,7 +87,8 @@ namespace Reliquary.Presentation
                 return;
             }
 
-            RelicDetailModel model = ViewModels.Detail(relic, _context.Presentation, _context.Inventory.CountOf(_open));
+            RelicDetailModel model = ViewModels.Detail(relic, _context.Presentation,
+                _context.Inventory.CountOf(_open), _context.Sets, _context.SetPresentation, _context.Inventory);
 
             _icon.sprite = model.Icon;
             _icon.enabled = model.Icon != null;
@@ -94,6 +98,29 @@ namespace Reliquary.Presentation
             SetText(_descriptionLabel, model.Description);
             SetText(_attributesLabel, $"Dissolves into {model.EssenceValue} essence     ·     Discovery weight {model.DiscoveryWeight}");
             SetText(_effectsLabel, Effects(model));
+            SetText(_setsLabel, Sets(model));
+        }
+
+        private string Sets(RelicDetailModel model)
+        {
+            if (model.SetLines == null || model.SetLines.Count == 0)
+            {
+                return "Belongs to no set.";
+            }
+
+            _builder.Length = 0;
+
+            for (int i = 0; i < model.SetLines.Count; i++)
+            {
+                if (i > 0)
+                {
+                    _builder.AppendLine();
+                }
+
+                _builder.Append("Set: ").Append(model.SetLines[i]);
+            }
+
+            return _builder.ToString();
         }
 
         private string Effects(RelicDetailModel model)

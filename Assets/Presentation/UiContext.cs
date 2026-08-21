@@ -10,12 +10,20 @@ namespace Reliquary.Presentation
     /// </summary>
     public sealed class UiContext
     {
-        public UiContext(RelicCatalog catalog, RelicPresentationLibrary presentation, Inventory inventory,
+        public UiContext(RelicCatalog catalog, RelicPresentationLibrary presentation, SetCatalog sets,
+            SetPresentationLibrary setPresentation, Inventory inventory, EssenceWallet wallet,
+            EssenceExchange exchange, Trader trader, SetCompletionWatcher completion,
             AcquisitionCoordinator coordinator, StatePersistence persistence)
         {
             Catalog = catalog;
             Presentation = presentation;
+            Sets = sets;
+            SetPresentation = setPresentation;
             Inventory = inventory;
+            Wallet = wallet;
+            Exchange = exchange;
+            Trader = trader;
+            Completion = completion;
             Coordinator = coordinator;
             Persistence = persistence;
         }
@@ -24,7 +32,19 @@ namespace Reliquary.Presentation
 
         public RelicPresentationLibrary Presentation { get; }
 
+        public SetCatalog Sets { get; }
+
+        public SetPresentationLibrary SetPresentation { get; }
+
         public Inventory Inventory { get; }
+
+        public EssenceWallet Wallet { get; }
+
+        public EssenceExchange Exchange { get; }
+
+        public Trader Trader { get; }
+
+        public SetCompletionWatcher Completion { get; }
 
         public AcquisitionCoordinator Coordinator { get; }
 

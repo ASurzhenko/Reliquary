@@ -18,6 +18,24 @@ namespace Reliquary.Presentation
             Select(0);
         }
 
+        /// <summary>
+        /// Shows the tab that holds this screen, for a route-out somewhere else on screen ("dissolve a spare
+        /// copy in the Vault"). A shortcut that named a tab index would break the moment the order changed.
+        /// </summary>
+        public void Show(ScreenView screen)
+        {
+            for (int i = 0; i < _tabs.Length; i++)
+            {
+                if (_tabs[i].Screen == screen)
+                {
+                    Select(i);
+                    return;
+                }
+            }
+
+            Debug.LogError($"{nameof(TabBarView)}.{nameof(Show)} '{screen.name}' is not on any tab.");
+        }
+
         private void Awake()
         {
             for (int i = 0; i < _tabs.Length; i++)

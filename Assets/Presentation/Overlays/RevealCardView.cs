@@ -9,17 +9,19 @@ namespace Reliquary.Presentation
     public enum RevealKind
     {
         New,
-        Duplicate
+        Duplicate,
+        SetComplete
     }
 
     public readonly struct RevealRequest
     {
-        public RevealRequest(RevealKind kind, string name, Sprite icon, int copies)
+        public RevealRequest(RevealKind kind, string name, Sprite icon, int copies, string detail = null)
         {
             Kind = kind;
             Name = name;
             Icon = icon;
             Copies = copies;
+            Detail = detail;
         }
 
         public RevealKind Kind { get; }
@@ -29,11 +31,15 @@ namespace Reliquary.Presentation
         public Sprite Icon { get; }
 
         public int Copies { get; }
+
+        /// <summary>What the milestone granted, in the perk's own words. Null for the two relic states.</summary>
+        public string Detail { get; }
     }
 
     /// <summary>
-    /// The answer to a press the player waited for. Requests queue rather than stack: two cards at once is
-    /// the only way this vocabulary can collide with itself, and a queue is the whole fix.
+    /// The answer to a press the player waited for. Requests queue rather than stack: a purchase that also
+    /// completes a set raises two of these one after the other, and two cards at once is the only way this
+    /// vocabulary can collide with itself.
     /// </summary>
     public sealed class RevealCardView : View
     {
@@ -45,6 +51,7 @@ namespace Reliquary.Presentation
         [SerializeField] private Button _continueButton;
         [SerializeField] private Color _newRibbon = new Color(0.55f, 0.82f, 0.55f);
         [SerializeField] private Color _duplicateRibbon = new Color(0.85f, 0.74f, 0.45f);
+        [SerializeField] private Color _milestoneRibbon = new Color(0.62f, 0.72f, 0.95f);
 
         private readonly Queue<RevealRequest> _queue = new Queue<RevealRequest>();
 
@@ -92,18 +99,69 @@ namespace Reliquary.Presentation
 
             _icon.sprite = request.Icon;
             _icon.enabled = request.Icon != null;
-            _ribbon.color = request.Kind == RevealKind.New ? _newRibbon : _duplicateRibbon;
+            _ribbon.color = RibbonOf(request.Kind);
 
-            SetText(_ribbonLabel, request.Kind == RevealKind.New ? "NEW" : $"COPY ×{request.Copies}");
+            SetText(_ribbonLabel, RibbonTextOf(request));
             SetText(_nameLabel, request.Name);
             SetText(_lineLabel, Line(request));
         }
 
+        private Color RibbonOf(RevealKind kind)
+        {
+            switch (kind)
+            {
+                case RevealKind.New:
+                    return _newRibbon;
+
+                case RevealKind.Duplicate:
+                    return _duplicateRibbon;
+
+                case RevealKind.SetComplete:
+                    return _milestoneRibbon;
+
+                default:
+                    Debug.LogError($"{nameof(RevealCardView)}.{nameof(RibbonOf)} unhandled kind '{kind}'.");
+                    return _newRibbon;
+            }
+        }
+
+        private static string RibbonTextOf(RevealRequest request)
+        {
+            switch (request.Kind)
+            {
+                case RevealKind.New:
+                    return "NEW";
+
+                case RevealKind.Duplicate:
+                    return $"COPY ×{request.Copies}";
+
+                case RevealKind.SetComplete:
+                    return "SET COMPLETE";
+
+                default:
+                    return "FOUND";
+            }
+        }
+
         private static string Line(RevealRequest request)
         {
-            return request.Kind == RevealKind.New
-                ? "A relic you have never held."
-                : "Another copy for the reliquary — spare copies are what essence is made of.";
+            switch (request.Kind)
+            {
+                case RevealKind.New:
+                    return "A relic you have never held.";
+
+                case RevealKind.Duplicate:
+                    return "Another copy for the reliquary — spare copies are what essence is made of.";
+
+                case RevealKind.SetComplete:
+                    return string.IsNullOrEmpty(request.Detail)
+                        ? "The set is complete."
+                        : $"Its perk is active from now on: {request.Detail}";
+
+                default:
+                    Debug.LogError($"{nameof(RevealCardView)}.{nameof(Line)} unhandled kind '{request.Kind}'.");
+                    return string.Empty;
+            }
         }
     }
 }

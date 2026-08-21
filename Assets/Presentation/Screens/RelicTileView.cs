@@ -24,6 +24,9 @@ namespace Reliquary.Presentation
         [SerializeField] private Color _unfoundBackground = new Color(0.14f, 0.15f, 0.18f);
         [SerializeField] private Color _ownedName = new Color(0.92f, 0.93f, 0.96f);
         [SerializeField] private Color _unfoundName = new Color(0.92f, 0.93f, 0.96f, 0.6f);
+        [SerializeField] private Color _foundFlash = new Color(0.35f, 0.44f, 0.36f);
+
+        private readonly float _flashSeconds = 0.6f;
 
         private RelicId _boundId;
         private Action<RelicId> _clicked;
@@ -41,10 +44,10 @@ namespace Reliquary.Presentation
         {
             _icon.sprite = model.Icon;
             _icon.enabled = model.Icon != null;
-            _icon.color = model.State == RelicTileState.Unfound ? new Color(1f, 1f, 1f, 0.25f) : Color.white;
 
-            _nameLabel.color = model.State == RelicTileState.Unfound ? _unfoundName : _ownedName;
-            _background.color = model.State == RelicTileState.Unfound ? _unfoundBackground : _ownedBackground;
+            SetColour(_icon, model.State == RelicTileState.Unfound ? new Color(1f, 1f, 1f, 0.25f) : Color.white);
+            SetColour(_nameLabel, model.State == RelicTileState.Unfound ? _unfoundName : _ownedName);
+            SetColour(_background, model.State == RelicTileState.Unfound ? _unfoundBackground : _ownedBackground);
             SetText(_nameLabel, model.Name);
 
             _badge.SetActive(model.State == RelicTileState.Duplicate);
@@ -53,6 +56,15 @@ namespace Reliquary.Presentation
             {
                 SetText(_badgeLabel, $"×{model.Copies}");
             }
+        }
+
+        /// <summary>
+        /// Marks the tile of a relic that just arrived or gained a copy. Returns false when the tile is not
+        /// on screen — its filter hid it, or the player is on another tab — so the caller can replay it.
+        /// </summary>
+        public bool FlashFound()
+        {
+            return Flash(_background, _foundFlash, _flashSeconds);
         }
 
         private void Awake()

@@ -14,6 +14,9 @@ namespace Reliquary.Presentation
     {
         private readonly string _readyLabel = "EXCAVATE";
         private readonly string _busyLabel = "EXCAVATING";
+        private readonly float _flashSeconds = 0.6f;
+
+        [SerializeField] private Color _shortcutFlash = new Color(0.62f, 0.72f, 0.95f);
 
         [SerializeField] private Button _button;
         [SerializeField] private TextMeshProUGUI _buttonLabel;
@@ -78,14 +81,40 @@ namespace Reliquary.Presentation
             }
         }
 
+        /// <summary>
+        /// The same intent the button raises, for a shortcut elsewhere on screen. It goes through this view
+        /// rather than around it, so the gate, the status line and the terminals stay in one place.
+        /// </summary>
+        public void RequestExcavation()
+        {
+            OnExcavateClicked();
+        }
+
+        /// <summary>Points at the real control after a shortcut somewhere else raised the same intent.</summary>
+        public void FlashButton()
+        {
+            Flash(_buttonLabel, _shortcutFlash, _flashSeconds);
+        }
+
+        /// <summary>
+        /// A perk changed what a dig is worth: the status line is where a pull bonus is visible, so that is
+        /// where the change is marked. Returns false when the bar is not on screen to say it.
+        /// </summary>
+        public bool FlashStatus()
+        {
+            return Flash(_statusText, _shortcutFlash, _flashSeconds);
+        }
+
         private void Awake()
         {
             // Wired once, on the view's own button: nothing here accumulates however often a screen is shown.
             _button.onClick.AddListener(OnExcavateClicked);
         }
 
-        private void OnDisable()
+        protected override void OnDisable()
         {
+            base.OnDisable();
+
             // Closing the bar invalidates whatever is in flight: cancel event E1 of the cancellation matrix.
             // The counter lives with the coordinator, so it outlives this view.
             _coordinator?.CancelPending();

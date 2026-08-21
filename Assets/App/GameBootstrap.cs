@@ -117,7 +117,8 @@ namespace Reliquary.App
             _coordinator = new AcquisitionCoordinator(service, inventory, content.Catalog);
             _coordinator.Completed += OnAcquisitionCompleted;
 
-            _shell.Bind(new UiContext(content.Catalog, content.Presentation, inventory, _coordinator, _persistence));
+            _shell.Bind(new UiContext(content.Catalog, content.Presentation, _sets, _setPresentation, inventory,
+                _wallet, _exchange, _trader, _completion, _coordinator, _persistence));
 
             WarnIfModifiersWereCapped(ActiveModifiers.For(_relics, _sets, inventory));
 
