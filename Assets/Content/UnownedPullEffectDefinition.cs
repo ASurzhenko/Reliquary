@@ -8,7 +8,9 @@ namespace Reliquary.Content
     {
         [SerializeField, Min(0)] private int _pullBonus = 100;
 
-        public override string Summary => $"Relics you have not found are {_pullBonus} points likelier to appear.";
+        // The bonus is a weight added to the draw, and a weight means nothing to a player: the line says what
+        // changes, not what the number is. Keeping it one line also keeps the perk row from wrapping.
+        public override string Summary => "Relics you have not found surface far more often.";
 
         public override IRelicEffect CreateEffect()
         {

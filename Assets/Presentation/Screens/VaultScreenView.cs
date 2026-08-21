@@ -189,11 +189,16 @@ namespace Reliquary.Presentation
 
         private string Describe(int listed, Inventory inventory)
         {
-            string relics = $"{listed} RELICS";
+            string relics = $"{listed} {(listed == 1 ? "RELIC" : "RELICS")}";
 
-            return VaultQuery.HasAnySpares(inventory)
-                ? $"{relics}  ·  {VaultQuery.SpareCopies(inventory)} SPARE COPIES"
-                : $"{relics}  ·  no spare copies yet — duplicates become essence";
+            if (!VaultQuery.HasAnySpares(inventory))
+            {
+                return $"{relics}  ·  no spare copies yet — duplicates become essence";
+            }
+
+            int spares = VaultQuery.SpareCopies(inventory);
+
+            return $"{relics}  ·  {spares} SPARE {(spares == 1 ? "COPY" : "COPIES")}";
         }
     }
 }

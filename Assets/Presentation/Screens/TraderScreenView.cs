@@ -114,7 +114,12 @@ namespace Reliquary.Presentation
 
             string name = ViewModels.SetName(offer.FocusSet, _context.SetPresentation);
 
-            return $"Completes {name} — {offer.FocusProgress.Owned} of {offer.FocusProgress.Total}";
+            // "Completes" is a promise, so it is only made when buying this relic actually finishes the set.
+            // Every other time the offer is a step towards it, and saying so is the difference between a
+            // player expecting a completion card and getting one.
+            return offer.FocusProgress.Owned + 1 == offer.FocusProgress.Total
+                ? $"Completes {name} — {offer.FocusProgress.Owned} of {offer.FocusProgress.Total}"
+                : $"Towards {name} — {offer.FocusProgress.Owned} of {offer.FocusProgress.Total}";
         }
 
         private void ShowAbsence(TraderAbsence absence)
